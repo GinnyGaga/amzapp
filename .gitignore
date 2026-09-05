@@ -1,0 +1,13 @@
+*.iml
+.gradle
+/local.properties
+/.idea/
+.DS_Store
+/build
+app/build/
+
+# Never ignore gradle-wrapper.jar
+*.jar
+!gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.jar
+
