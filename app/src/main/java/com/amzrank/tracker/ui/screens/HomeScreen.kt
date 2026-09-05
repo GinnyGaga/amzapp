@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.amzrank.tracker.data.local.entity.AsinItem
 import com.amzrank.tracker.ui.components.AddAsinDialog
+import com.amzrank.tracker.ui.theme.AmazonBlue
 import com.amzrank.tracker.ui.theme.AmazonDark
 import com.amzrank.tracker.ui.theme.AmazonPrimary
 import com.amzrank.tracker.ui.theme.RankDownRed
