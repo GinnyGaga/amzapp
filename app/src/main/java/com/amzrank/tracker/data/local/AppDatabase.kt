@@ -1,4 +1,4 @@
-﻿package com.amzrank.tracker.data.local
+package com.amzrank.tracker.data.local
 
 import android.content.Context
 import androidx.room.Database
@@ -11,7 +11,7 @@ import com.amzrank.tracker.data.local.entity.RankRecord
 
 @Database(
     entities = [AsinItem::class, RankRecord::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

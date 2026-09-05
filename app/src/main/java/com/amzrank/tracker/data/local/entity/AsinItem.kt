@@ -1,4 +1,4 @@
-﻿package com.amzrank.tracker.data.local.entity
+package com.amzrank.tracker.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -16,7 +16,8 @@ data class AsinItem(
     val latestSubCategory: String? = null,
     val previousMainRank: Int? = null,
     val lastUpdated: Long = 0L,
-    val lastStatus: String = "PENDING", // PENDING, OK, CAPTCHA, ERROR
+    val lastStatus: String = "PENDING", // PENDING, OK, NO_RANK, CAPTCHA, ERROR
+    val errorMessage: String? = null,
     val isActive: Boolean = true,
     val createdAt: Long = System.currentTimeMillis()
 ) {

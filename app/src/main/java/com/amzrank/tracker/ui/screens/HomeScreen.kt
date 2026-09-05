@@ -1,4 +1,4 @@
-﻿package com.amzrank.tracker.ui.screens
+package com.amzrank.tracker.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
@@ -172,6 +172,40 @@ fun HomeScreen(
                         color = AmazonDark,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
                     )
+                }
+            }
+
+            // 防爬人机验证提示横幅
+            val hasCaptcha = asins.any { it.lastStatus == "CAPTCHA" }
+            if (hasCaptcha) {
+                Card(
+                    shape = RoundedCornerShape(8.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .clickable { onNavigateToWebVerify() }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = "🛡️", fontSize = 22.sp)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "检测到亚马逊防爬拦截",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                            Text(
+                                text = "点击进入内置浏览器浏览一次，即可自动同步 Cookies 恢复正常抓取",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
                 }
             }
 
@@ -366,11 +400,19 @@ fun AsinCard(
                         }
                     }
                 } else {
-                    // 状态标记 (待更新 / 遇到验证码 / 错误)
+                    // 状态标记 (待更新 / 无排名 / 遇到验证码 / 错误)
                     when (item.lastStatus) {
+                        "NO_RANK" -> {
+                            Text(
+                                text = "📦 暂无销售榜排名 (新上架/冷门款)",
+                                fontSize = 12.sp,
+                                color = AmazonBlue,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
                         "CAPTCHA" -> {
                             Text(
-                                text = "⚠️ 遇到验证码，点击前往验证",
+                                text = "⚠️ 触发防爬验证，点击前往",
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.error,
                                 fontWeight = FontWeight.Bold,
@@ -379,7 +421,16 @@ fun AsinCard(
                         }
                         "ERROR" -> {
                             Text(
-                                text = "❌ 更新失败，点击右侧重试",
+                                text = "❌ ${item.errorMessage ?: "更新失败，点击右侧重试"}",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.error,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                        "NOT_FOUND" -> {
+                            Text(
+                                text = "🔍 未找到商品页面，请检查 ASIN",
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.error
                             )

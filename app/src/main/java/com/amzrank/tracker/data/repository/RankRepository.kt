@@ -1,4 +1,4 @@
-﻿package com.amzrank.tracker.data.repository
+package com.amzrank.tracker.data.repository
 
 import com.amzrank.tracker.data.local.AppDatabase
 import com.amzrank.tracker.data.local.entity.AsinItem
@@ -106,7 +106,22 @@ class RankRepository(private val database: AppDatabase) {
                     latestSubCategory = result.subCategory,
                     previousMainRank = prevRank,
                     lastUpdated = now,
-                    lastStatus = "OK"
+                    lastStatus = "OK",
+                    errorMessage = null
+                )
+                asinDao.insertOrUpdate(updatedItem)
+            }
+
+            is ScrapeResult.NoRank -> {
+                // 商品存在但尚无排名，正常保留标题和封面
+                val updatedItem = currentItem.copy(
+                    productTitle = result.title ?: currentItem.productTitle,
+                    imageUrl = result.imageUrl ?: currentItem.imageUrl,
+                    latestMainRank = null,
+                    latestMainCategory = null,
+                    lastUpdated = now,
+                    lastStatus = "NO_RANK",
+                    errorMessage = result.message
                 )
                 asinDao.insertOrUpdate(updatedItem)
             }
@@ -115,7 +130,8 @@ class RankRepository(private val database: AppDatabase) {
                 asinDao.insertOrUpdate(
                     currentItem.copy(
                         lastUpdated = now,
-                        lastStatus = "CAPTCHA"
+                        lastStatus = "CAPTCHA",
+                        errorMessage = result.message
                     )
                 )
             }
@@ -124,7 +140,8 @@ class RankRepository(private val database: AppDatabase) {
                 asinDao.insertOrUpdate(
                     currentItem.copy(
                         lastUpdated = now,
-                        lastStatus = "ERROR"
+                        lastStatus = "ERROR",
+                        errorMessage = result.message
                     )
                 )
             }
@@ -133,7 +150,8 @@ class RankRepository(private val database: AppDatabase) {
                 asinDao.insertOrUpdate(
                     currentItem.copy(
                         lastUpdated = now,
-                        lastStatus = "NOT_FOUND"
+                        lastStatus = "NOT_FOUND",
+                        errorMessage = result.message
                     )
                 )
             }
@@ -145,6 +163,7 @@ class RankRepository(private val database: AppDatabase) {
     data class SyncSummary(
         val total: Int,
         val successCount: Int,
+        val noRankCount: Int,
         val captchaCount: Int,
         val errorCount: Int
     )
@@ -157,6 +176,7 @@ class RankRepository(private val database: AppDatabase) {
     ): SyncSummary = withContext(Dispatchers.IO) {
         val activeItems = asinDao.getActiveAsins()
         var success = 0
+        var noRank = 0
         var captcha = 0
         var error = 0
 
@@ -166,6 +186,7 @@ class RankRepository(private val database: AppDatabase) {
 
             when (syncSingleAsin(item.asin)) {
                 is ScrapeResult.Success -> success++
+                is ScrapeResult.NoRank -> noRank++
                 is ScrapeResult.CaptchaBlocked -> captcha++
                 else -> error++
             }
@@ -179,6 +200,7 @@ class RankRepository(private val database: AppDatabase) {
         SyncSummary(
             total = total,
             successCount = success,
+            noRankCount = noRank,
             captchaCount = captcha,
             errorCount = error
         )
