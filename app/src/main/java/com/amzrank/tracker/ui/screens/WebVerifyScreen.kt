@@ -1,4 +1,4 @@
-﻿package com.amzrank.tracker.ui.screens
+package com.amzrank.tracker.ui.screens
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
@@ -59,13 +59,13 @@ fun WebVerifyScreen(
                 title = {
                     Column {
                         Text(
-                            text = "亚马逊人机验证与会话助手",
+                            text = "亚马逊安全验证与会话助手",
                             fontWeight = FontWeight.Bold,
                             fontSize = 17.sp,
                             color = Color.White
                         )
                         Text(
-                            text = "在此验证人机滑块，通行后台抓取",
+                            text = "完成验证后点击右下角保存，畅通后台抓取",
                             fontSize = 11.sp,
                             color = Color.White.copy(alpha = 0.8f)
                         )
@@ -86,14 +86,13 @@ fun WebVerifyScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    // 强制刷新并保存 cookies
-                    CookieManager.getInstance().flush()
+                    CookieManagerHelper.ensureEnglishCookies()
                     onNavigateBack()
                 },
                 containerColor = AmazonPrimary,
                 contentColor = AmazonDark
             ) {
-                Icon(imageVector = Icons.Default.Check, contentDescription = "验证完毕返回")
+                Icon(imageVector = Icons.Default.Check, contentDescription = "保存会话并返回")
             }
         }
     ) { paddingValues ->
@@ -118,7 +117,7 @@ fun WebVerifyScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "💡 遇到验证码时，请在下方网页中完成验证或随便浏览一个商品。完成后点击右下角【✔】即可将安全 Cookies 同步给每日后台爬虫！",
+                        text = "💡 提示：若遇到人机验证，请在下方网页中滑动拼图通过。通过后点击右下角【✔】即可将安全 Cookies 同步给 App 继续抓取！",
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
@@ -141,6 +140,7 @@ fun WebVerifyScreen(
                             val cookieManager = CookieManager.getInstance()
                             cookieManager.setAcceptCookie(true)
                             cookieManager.setAcceptThirdPartyCookies(this, true)
+                            CookieManagerHelper.ensureEnglishCookies()
 
                             webViewClient = object : WebViewClient() {
                                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
@@ -151,7 +151,7 @@ fun WebVerifyScreen(
                                 override fun onPageFinished(view: WebView?, url: String?) {
                                     super.onPageFinished(view, url)
                                     isLoading = false
-                                    cookieManager.flush()
+                                    CookieManagerHelper.ensureEnglishCookies()
                                 }
                             }
 
@@ -161,7 +161,7 @@ fun WebVerifyScreen(
                                 }
                             }
 
-                            loadUrl("https://www.amazon.com/")
+                            loadUrl("https://www.amazon.com/?language=en_US")
                         }
                     }
                 )
