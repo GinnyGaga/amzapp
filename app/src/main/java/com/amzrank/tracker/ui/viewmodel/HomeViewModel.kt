@@ -1,4 +1,4 @@
-﻿package com.amzrank.tracker.ui.viewmodel
+package com.amzrank.tracker.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -46,6 +46,23 @@ class HomeViewModel(private val repository: RankRepository) : ViewModel() {
                 _userMessage.value = "成功添加监控 ASIN: $asin"
             }.onFailure { e ->
                 _userMessage.value = "添加失败: ${e.message}"
+            }
+        }
+    }
+
+    fun addAsinsBatch(rawInput: String) {
+        viewModelScope.launch {
+            _isSyncing.value = true
+            _syncProgressText.value = "正在批量添加商品..."
+            val added = repository.addAsinsBatch(rawInput)
+            _isSyncing.value = false
+            _syncProgressText.value = null
+
+            if (added.isNotEmpty()) {
+                _userMessage.value = "成功批量导入 ${added.size} 个 ASIN，开始更新排名..."
+                syncAll()
+            } else {
+                _userMessage.value = "未从输入内容中识别出有效的 10 位 ASIN"
             }
         }
     }

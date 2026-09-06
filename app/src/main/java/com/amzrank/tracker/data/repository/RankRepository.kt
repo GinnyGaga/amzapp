@@ -55,6 +55,24 @@ class RankRepository(private val database: AppDatabase) {
         Result.success(asin)
     }
 
+    /**
+     * 批量导入多个 ASIN
+     */
+    suspend fun addAsinsBatch(rawInput: String): List<String> = withContext(Dispatchers.IO) {
+        val asins = AmazonScraper.extractAllAsinsFromText(rawInput)
+        val addedList = mutableListOf<String>()
+
+        for (asin in asins) {
+            val existing = asinDao.getAsin(asin)
+            val initialItem = existing?.copy(isActive = true)
+                ?: AsinItem(asin = asin, alias = "商品 $asin", lastStatus = "PENDING")
+            asinDao.insertOrUpdate(initialItem)
+            addedList.add(asin)
+        }
+
+        addedList
+    }
+
     suspend fun deleteAsin(asin: String) = withContext(Dispatchers.IO) {
         asinDao.deleteByAsin(asin)
         rankRecordDao.deleteByAsin(asin)

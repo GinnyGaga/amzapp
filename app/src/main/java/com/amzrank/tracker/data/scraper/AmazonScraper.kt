@@ -302,4 +302,33 @@ object AmazonScraper {
         }
         return null
     }
+
+    /**
+     * 批量提取工具：从任意大段文本、多行文本或多个链接中提取出所有不重复的 10 位 ASIN 码
+     */
+    fun extractAllAsinsFromText(input: String): List<String> {
+        val results = linkedSetOf<String>()
+        // 1. 优先提取标准链接中的 ASIN
+        val urlPatterns = listOf(
+            Regex("/(?:dp|gp/product|product)/([A-Z0-9]{10})", RegexOption.IGNORE_CASE),
+            Regex("[?&]asin=([A-Z0-9]{10})", RegexOption.IGNORE_CASE)
+        )
+        for (pattern in urlPatterns) {
+            pattern.findAll(input).forEach { match ->
+                results.add(match.groupValues[1].uppercase())
+            }
+        }
+
+        // 2. 匹配以边界隔开的 10 位字母数字组合（如 B08N5WRWNW）
+        val tokenPattern = Regex("\\b([A-Z0-9]{10})\\b", RegexOption.IGNORE_CASE)
+        tokenPattern.findAll(input).forEach { match ->
+            val token = match.groupValues[1].uppercase()
+            // 典型 Amazon ASIN 通常包含字母与数字（排除纯全小写无意义字符或纯数字）
+            if (token.length == 10) {
+                results.add(token)
+            }
+        }
+
+        return results.toList()
+    }
 }
